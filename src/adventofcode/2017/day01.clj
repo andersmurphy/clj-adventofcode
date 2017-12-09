@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as string]))
 
-(def input-string (string/trim-newline (slurp (io/resource "adventofcode/2017/day01"))))
+(def input-string (string/trim-newline (slurp (io/resource "adventofcode/2017/day01.txt"))))
 
 (defn convert-string-to-array-of-numbers
   [put-string]
