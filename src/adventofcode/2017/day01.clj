@@ -5,7 +5,7 @@
 (def input-string (string/trim-newline (slurp (io/resource "adventofcode/2017/day01.txt"))))
 
 (defn convert-string-to-array-of-numbers
-  [put-string]
+  [input-string]
   (map (comp read-string str) (seq input-string)))
 
 (defn count-neighbouring-numbers
