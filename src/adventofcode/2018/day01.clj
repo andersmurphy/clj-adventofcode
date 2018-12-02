@@ -2,12 +2,9 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(defn split-on-new-line [s]
-  (str/split s #"\n"))
-
 (defn parse-file []
   (->> (slurp (io/resource "adventofcode/2018/day01.txt"))
-       split-on-new-line
+       str/split-lines
        (map #(Integer/parseInt %))))
 
 (defn solve-1 []
