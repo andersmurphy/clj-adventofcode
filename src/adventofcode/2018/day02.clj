@@ -6,15 +6,13 @@
   (->> (slurp (io/resource "adventofcode/2018/day02.txt"))
        str/split-lines))
 
-(defn count-n [n s]
+(defn some-n [n s]
   (->> (frequencies s)
-       (some (fn [[k v]]
-               (if (= n v)
-                 {(keyword (str n "s")) 1})))))
+       (some (fn [[k v]] (if (= n v) {n 1})))))
 
 (defn solve-1 []
   (->> (parse-file)
-       (map #(into (count-n 2 %) (count-n 3 %)))
+       (map (fn [s] (into (some-n 2 s) (some-n 3 s))))
        (apply merge-with +)
        vals
        (apply *)))
