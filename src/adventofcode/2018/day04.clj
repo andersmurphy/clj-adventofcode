@@ -34,13 +34,13 @@
   (assoc entry :total-minutes (count time)))
 
 (defn add-most-likely-minute-to-be-asleep [{:keys [time] :as entry}]
-  (let [[minute freq] (->> (frequencies time) (sort-by second) last first)])
-  (assoc entry :minute-most-asleep minute :freq-most-asleep freq))
+  (let [[minute freq] (->> (frequencies time) (sort-by second) last)]
+    (assoc entry :minute-most-asleep minute :freq-most-asleep freq)))
 
 (defn id*minute-most-asleep [{:keys [id minute-most-asleep]}]
   (* (Integer/parseInt id) minute-most-asleep))
 
-(defn common-work []
+(defn find-entry-with [sort-key]
   (->> parsed-data
        (sort-by :time)
        populate-missing-ids
@@ -49,17 +49,12 @@
        (partition 2)
        (map merge-pairs)
        (group-by :id)
-       (map merge-time)))
-
-(defn solve-1 []
-  (->> (common-work)
+       (map merge-time)
        (map add-total-minutes)
-       (sort-by :total-minutes) last
-       add-most-likely-minute-to-be-asleep
+       (map add-most-likely-minute-to-be-asleep)
+       (sort-by sort-key) last
        id*minute-most-asleep))
 
-(defn solve-2 []
-  (->> (common-work)
-       (map add-most-likely-minute-to-be-asleep)
-       (sort-by :freq-most-asleep) last
-       id*minute-most-asleep))
+(defn solve-1 [] (find-entry-with :minute-most-asleep))
+
+(defn solve-2 [] (find-entry-with :freq-most-asleep))
