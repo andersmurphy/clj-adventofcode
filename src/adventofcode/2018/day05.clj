@@ -1,28 +1,36 @@
 (ns adventofcode.2018.day05
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as s]))
 
 (def parsed-data
   (-> (slurp (io/resource "adventofcode/2018/day05.txt"))
-      str/trim))
+      s/trim))
 
-(def regex-for-polarity
-  "Creates regex of the form aA|Aa|bB|Bb..."
-  (->> (mapcat
-        (fn [s] [(str s (str/upper-case s)) (str (str/upper-case s) s)])
-        "abcdefghijklmnopqrstuvwxyz")
-       (interpose "|")
-       (apply str)
-       re-pattern))
+(def alphabet "abcdefghijklmnopqrstuvwxyz")
 
-(defn react
-  ([current] (react "" current))
-  ([prev current]
-   (if (= prev current)
-     (count current)
-     (recur current (str/replace current regex-for-polarity "")))))
+(defn reacts? [a b]
+  (and (not= a b)
+       (or (= (str a) (s/upper-case b))
+           (= (str b) (s/upper-case a)))))
+
+(defn react [units]
+  (-> (reduce (fn [acc next-unit]
+                (let [last-unit (first acc)]
+                  (if (and last-unit (reacts? last-unit next-unit))
+                    (drop 1 acc)
+                    (conj acc next-unit))))
+              '() units)
+      count))
 
 (defn solve-1 []
   (-> parsed-data react))
 
-(defn solve-2 [] nil)
+(defn solve-2 []
+  (->> (pmap #(-> (s/replace parsed-data
+                             (re-pattern (str % "|" (s/upper-case %)))
+                             "")
+                  react)
+             alphabet)
+       (apply min)))
+
+;;"Elapsed time: 190.527993 msecs"
