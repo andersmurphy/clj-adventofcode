@@ -6,8 +6,6 @@
   (-> (slurp (io/resource "adventofcode/2018/day05.txt"))
       s/trim))
 
-(def alphabet "abcdefghijklmnopqrstuvwxyz")
-
 (defn reacts? [a b]
   (and (not= a b)
        (or (= (str a) (s/upper-case b))
@@ -26,11 +24,9 @@
   (-> parsed-data react))
 
 (defn solve-2 []
-  (->> (pmap #(-> (s/replace parsed-data
-                             (re-pattern (str % "|" (s/upper-case %)))
-                             "")
-                  react)
-             alphabet)
-       (apply min)))
-
-;;"Elapsed time: 190.527993 msecs"
+  (time (->> (pmap #(-> (s/replace parsed-data
+                                   (re-pattern (str % "|" (s/upper-case %)))
+                                   "")
+                        react)
+                   "abcdefghijklmnopqrstuvwxyz")
+             (apply min))))
