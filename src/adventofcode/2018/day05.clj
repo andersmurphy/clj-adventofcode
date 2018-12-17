@@ -24,9 +24,9 @@
   (-> parsed-data react))
 
 (defn solve-2 []
-  (time (->> (pmap #(-> (s/replace parsed-data
-                                   (re-pattern (str % "|" (s/upper-case %)))
-                                   "")
-                        react)
-                   "abcdefghijklmnopqrstuvwxyz")
-             (apply min))))
+  (->> (pmap #(-> (s/replace parsed-data
+                             (re-pattern (str % "|" (s/upper-case %)))
+                             "")
+                  react)
+             "abcdefghijklmnopqrstuvwxyz")
+       (apply min)))
