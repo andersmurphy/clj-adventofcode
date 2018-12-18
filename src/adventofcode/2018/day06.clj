@@ -29,20 +29,19 @@
   (if (= d1 d2) nil id))
 
 (defn closest [coords {sqr-x :x sqr-y :y :as m}]
-  (->> (map (fn [{:keys [x y id]}]
-              {:id id :distance (+ (math/abs (- x sqr-x))
-                                   (math/abs (- y sqr-y)))})
-            coords)
-       (sort-by :distance)
-       nil-if-equally-far
-       (assoc m :closest)))
+  (some->> (map (fn [{:keys [x y id]}]
+                  {:id id :distance (+ (math/abs (- x sqr-x))
+                                       (math/abs (- y sqr-y)))})
+                coords)
+           (sort-by :distance)
+           nil-if-equally-far
+           (assoc m :closest)))
 
 (defn solve-1 []
   (let [coords (parsed-data)]
     (->> (bounds coords)
          squares
-         (map (partial closest coords))
+         (keep (partial closest coords))
          (group-by :closest)
-         (remove (fn [[key _]] (nil? key)))
          (map (fn [[_ squares]] (count squares)))
          sort last)))
