@@ -52,4 +52,4 @@
          (write-file-with-missing-directories!
           (->local-src-path year day)))))
 
-(comment (create-file-for-puzzle! 2018 7))
+(comment (create-file-for-puzzle! 2019 1))
