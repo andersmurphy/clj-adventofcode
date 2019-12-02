@@ -7,16 +7,14 @@
   (->> (str/split (str/trim input) #",")
        (map #(Integer/parseInt %))))
 
-(defn compute
-  ([nums]
-   (compute 0 nums))
-  ([chunk nums]
-   (let [nums            (vec nums)
-         [op a b output] ((vec (partition-all 4 nums)) chunk)]
-     (if-not (= op 99)
-       (->> (assoc nums output (({1 +, 2 *} op) (nums a) (nums b)))
-            (recur (inc chunk)))
-       nums))))
+(defn compute [nums]
+  (->> (partition-all 4 nums)
+       vec
+       (reduce (fn [nums [op a b output]]
+                 (if-not (= op 99)
+                   (assoc nums output (({1 +, 2 *} op) (nums a) (nums b)))
+                   (reduced nums)))
+               nums)))
 
 (defn set-initial [a b nums]
   (-> (assoc (vec nums) 1 a)
