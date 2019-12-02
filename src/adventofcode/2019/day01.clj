@@ -15,7 +15,7 @@
 
 (defn solve-2 []
   (->> (mapcat (fn [x] (->> (iterate calculate-fuel-mass x)
-                            (take-while #(> % 0))
+                            (take-while pos?)
                             (drop 1)))
                input)
        (apply +)))
