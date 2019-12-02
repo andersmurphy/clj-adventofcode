@@ -3,6 +3,10 @@
 
 (def input (slurp "resources/adventofcode/2019/day02.txt"))
 
+(def clean-input
+  (->> (str/split (str/trim input) #",")
+       (map #(Integer/parseInt %))))
+
 (defn compute
   ([nums]
    (compute 0 nums))
@@ -19,8 +23,7 @@
       (assoc 2 b)))
 
 (defn solve-1 [noun verb]
-  (->> (str/split (str/trim input) #",")
-       (map #(Integer/parseInt %))
+  (->> clean-input
        (set-initial noun verb)
        compute
        first))
