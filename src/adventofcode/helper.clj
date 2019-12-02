@@ -1,7 +1,8 @@
 (ns adventofcode.helper
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
-            [clj-http.client :as client])
+            [clj-http.client :as client]
+            [clojure.template :as temp])
   (:import [java.io FileNotFoundException]))
 
 (defonce session-token
@@ -26,11 +27,15 @@
        (add-leading-zeros-if-needed day) ".clj"))
 
 (defn file-template [year day]
-  (str `(~'ns ~(symbol (str "adventofcode." year ".day"
-                            (add-leading-zeros-if-needed day))))
-       "\n"
-       "\n"
-       `(~'def ~'input (~'slurp ~(->local-input-path year day)))))
+  (->> (temp/apply-template
+        '[name path]
+        '((ns name)
+          (def input (slurp path)))
+        [(symbol (str "adventofcode." year ".day"
+                      (add-leading-zeros-if-needed day)))
+         (->local-input-path year day)])
+       (interpose "\n\n")
+       (apply str)))
 
 (defn write-file-with-missing-directories! [path content]
   (io/make-parents path)
