@@ -1,10 +1,8 @@
 (ns adventofcode.2019.day02
   (:require [clojure.string :as str]))
 
-(def input (slurp "resources/adventofcode/2019/day02.txt"))
-
-(def clean-input
-  (->> (str/split (str/trim input) #",")
+(def input
+  (->> (str/split (str/trim (slurp "resources/adventofcode/2019/day02.txt")) #",")
        (map #(Integer/parseInt %))))
 
 (defn compute [nums]
@@ -21,7 +19,7 @@
       (assoc 2 b)))
 
 (defn solve-1 [noun verb]
-  (->> clean-input
+  (->> input
        (set-initial noun verb)
        compute
        first))
