@@ -1,25 +1,23 @@
 (ns adventofcode.2019.day01
   (:require [clojure.string :as str]))
 
-(def input (slurp "resources/adventofcode/2019/day01.txt"))
+(def input (->> (str/split (slurp "resources/adventofcode/2019/day01.txt") #"\n")
+                (map #(Integer/parseInt %))))
+
+(defn calculate-fuel-mass [x]
+  (- (quot x 3) 2))
 
 (defn solve-1 []
-  (->> (str/split input #"\n")
-       (map #(Integer/parseInt %))
-       (map (fn [x] (- (int (/ x 3)) 2)))
+  (->> (map calculate-fuel-mass input)
        (apply +)))
 
 (comment (solve-1))
 
-(defn calculate-module-mass [x]
-  (lazy-seq
-   (when (> x 0)
-     (cons x (calculate-module-mass (- (int (/ x 3)) 2))))))
-
 (defn solve-2 []
-  (->> (str/split input #"\n")
-       (map #(Integer/parseInt %))
-       (mapcat #(->> % calculate-module-mass (drop 1)))
+  (->> (mapcat (fn [x] (->> (iterate calculate-fuel-mass x)
+                            (take-while #(> % 0))
+                            (drop 1)))
+               input)
        (apply +)))
 
 (comment (solve-2))
