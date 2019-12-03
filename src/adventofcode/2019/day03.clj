@@ -25,16 +25,16 @@
         (update :steps inc))))
 
 (defn generate-points [displacements]
-  (-> (reduce (fn [previous-points
-                   {:keys [direction distance]}]
-                (->> (last previous-points)
-                     (iterate (partial move-in-direction direction))
-                     (take (inc distance))
-                     (into previous-points)))
-              [{:pos   {:x 0 :y 0}
-                :steps 0}]
-              displacements)
-      distinct))
+  (reduce (fn [previous-points
+               {:keys [direction distance]}]
+            (->> (last previous-points)
+                 (iterate (partial move-in-direction direction))
+                 (drop 1)
+                 (take distance)
+                 (into previous-points)))
+          [{:pos   {:x 0 :y 0}
+            :steps 0}]
+          displacements))
 
 (defn find-intersections [[line-a line-b]]
   (let [line-a-points (generate-points line-a)
