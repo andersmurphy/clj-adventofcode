@@ -1,8 +1,7 @@
 (ns adventofcode.helper
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
-            [clj-http.client :as client]
-            [clojure.template :as temp])
+            [clj-http.client :as client])
   (:import [java.io FileNotFoundException]))
 
 (defonce session-token
