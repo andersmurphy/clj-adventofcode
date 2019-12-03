@@ -29,8 +29,10 @@
 (defn file-template [year day]
   (->> (temp/apply-template
         '[name path]
-        '((ns name)
-          (def input (slurp path)))
+        '((ns name
+            (:require [clojure.string :as str]))
+          (def input-path path)
+          (def input (->> (str/split (str/trim (slurp input-path)) #","))))
         [(symbol (str "adventofcode." year ".day"
                       (add-leading-zeros-if-needed day)))
          (->local-input-path year day)])
