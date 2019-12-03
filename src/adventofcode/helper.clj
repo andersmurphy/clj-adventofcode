@@ -27,17 +27,25 @@
        (add-leading-zeros-if-needed day) ".clj"))
 
 (defn file-template [year day]
-  (->> (temp/apply-template
-        '[name path]
-        '((ns name
-            (:require [clojure.string :as str]))
-          (def input-path path)
-          (def input (->> (str/split (str/trim (slurp input-path)) #","))))
-        [(symbol (str "adventofcode." year ".day"
-                      (add-leading-zeros-if-needed day)))
-         (->local-input-path year day)])
-       (interpose "\n\n")
-       (apply str)))
+  (format
+   "(ns adventofcode.%s.day%s
+  (:require [clojure.string :as str]))
+
+(def input (slurp \"%s\"))
+
+(defn format-input [input]
+  (->> (str/split (str/trim input) #\",\")))
+
+(defn solve-1 []
+  (->> input
+       format-input))
+
+(defn solve-2 []
+  (->> input
+       format-input))"
+   year
+   (add-leading-zeros-if-needed day)
+   (->local-input-path year day)))
 
 (defn write-file-with-missing-directories! [path content]
   (io/make-parents path)
@@ -59,4 +67,4 @@
          (write-file-with-missing-directories!
           (->local-src-path year day)))))
 
-(comment (create-file-for-puzzle! 2019 3))
+(comment (create-file-for-puzzle! 2015 1))
