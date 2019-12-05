@@ -5,53 +5,33 @@
   (->> (str/split (str/trim input) #",")
        (mapv #(Integer/parseInt %))))
 
-(defn code->seq [code]
-  (->> (iterate #(quot % 10) code)
-       (take 5)
-       (map #(mod % 10))))
-
-(defn get-op [{:keys [prog index]}]
-  (let [[code] (drop index prog)]
-    (->>  (code->seq code)
-          (take 2)
-          reverse
-          (apply str)
-          Integer/parseInt)))
-
-(defn get-modes [code]
-  (->> (code->seq code)
-       (drop 2)))
-
-(defn mode [code prog & args]
-  (map (fn [mode param]
-         (if (zero? mode) (prog param) param))
-       (get-modes code)
-       args))
-
-(defmulti op-code get-op)
-
-(defmethod op-code 1 [{:keys [prog index] :as m}]
-  (merge m {:prog  (let [[code a b adr] (drop index prog)]
-                     (assoc prog adr (apply + (mode code prog a b))))
-            :index (+ index 4)}))
-
-(defmethod op-code 2 [{:keys [prog index] :as m}]
-  (merge m {:prog  (let [[code a b adr] (drop index prog)]
-                     (assoc prog adr (apply * (mode code prog a b))))
-            :index (+ index 4)}))
-
-(defmethod op-code 3 [{:keys [prog prog-input index] :as m}]
-  (merge m {:prog  (let [[_ adr] (drop index prog)]
-                     (assoc prog adr prog-input))
-            :index (+ index 2)}))
-
-(defmethod op-code 4 [{:keys [prog-output index prog] :as m}]
-  (merge m {:prog-output (let [[code adr] (drop index prog)]
-                           (conj prog-output (first (mode code prog adr))))
-            :index       (+ index 2)}))
-
-(defmethod op-code 99 [m]
-  (assoc m :stop true))
+(defn op-code [{:keys [prog prog-input index] :as m}]
+  (let [[code & args] (drop index prog)]
+    (({1    (fn [[a b adr]] (-> (assoc-in m [:prog adr] (+ (prog a) (prog b)))
+                                (update :index + 4)))
+       101  (fn [[a b adr]] (-> (assoc-in m [:prog adr] (+ a (prog b)))
+                                (update :index + 4)))
+       1001 (fn [[a b adr]] (-> (assoc-in m [:prog adr] (+ (prog a) b))
+                                (update :index + 4)))
+       1101 (fn [[a b adr]] (-> (assoc-in m [:prog adr] (+ a b))
+                                (update :index + 4)))
+       2    (fn [[a b adr]] (-> (assoc-in m [:prog adr] (* (prog a) (prog b)))
+                                (update :index + 4)))
+       102  (fn [[a b adr]] (-> (assoc-in m [:prog adr] (* a (prog b)))
+                                (update :index + 4)))
+       1002 (fn [[a b adr]] (-> (assoc-in m [:prog adr] (* (prog a) b))
+                                (update :index + 4)))
+       1102 (fn [[a b adr]] (-> (assoc-in m [:prog adr] (* a b))
+                                (update :index + 4)))
+       3    (fn [[adr]]     (-> (assoc-in m [:prog adr] prog-input)
+                                (update :index + 2)))
+       4    (fn [[adr]]     (-> (update m :prog-output conj (prog adr))
+                                (update :index + 2)))
+       104  (fn [[adr]]     (-> (update m :prog-output conj  adr)
+                                (update :index + 2)))
+       99   (fn [_] (assoc m :stop true))}
+      code)
+     args)))
 
 (defn compute [{:keys [stop] :as m}]
   (if-not stop (recur (op-code m)) m))
