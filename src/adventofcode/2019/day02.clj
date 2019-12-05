@@ -3,19 +3,29 @@
 
 (def input
   (->> (str/split (str/trim (slurp "resources/adventofcode/2019/day02.txt")) #",")
-       (map #(Integer/parseInt %))))
+       (mapv #(Integer/parseInt %))))
 
-(defn compute [nums]
-  (->> (partition-all 4 nums)
-       vec
-       (reduce (fn [nums [op a b output]]
-                 (if-not (= op 99)
-                   (assoc nums output (({1 +, 2 *} op) (nums a) (nums b)))
-                   (reduced nums)))
-               nums)))
+(defmulti op-code (fn [_ [op]] op))
+
+(defmethod op-code 1 [nums [_ a b store-at & remaining-prog]]
+  [(assoc nums store-at (+ (nums a) (nums b))) remaining-prog])
+
+(defmethod op-code 2 [nums [_ a b store-at & remaining-prog]]
+  [(assoc nums store-at (* (nums a) (nums b))) remaining-prog])
+
+(defmethod op-code 99 [nums _]
+  [nums nil])
+
+(defn compute
+  ([nums] (compute nums nums))
+  ([nums program]
+   (if program
+     (let [[nums program] (op-code nums program)]
+       (recur nums program))
+     nums)))
 
 (defn set-initial [a b nums]
-  (-> (assoc (vec nums) 1 a)
+  (-> (assoc nums 1 a)
       (assoc 2 b)))
 
 (defn solve-1 [noun verb]
