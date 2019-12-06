@@ -89,9 +89,11 @@
 (defn solve-1 []
   (let [input (format-input input)]
     (-> {:prog input :prog-input 1 :prog-output [] :pointer 0}
-        compute)))
+        compute
+        :prog-output)))
 
 (defn solve-2 []
   (let [input (format-input input)]
     (-> {:prog input :prog-input 5 :prog-output [] :pointer 0}
-        compute)))
+        compute
+        :prog-output)))
