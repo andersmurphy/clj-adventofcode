@@ -13,30 +13,19 @@
        (cons head tail))
      [s])))
 
-(defn system-1 [input [a b c d e]]
-  (let [a-chan   (a/chan)
-        b-chan   (a/chan)
-        c-chan   (a/chan)
-        d-chan   (a/chan)
-        e-chan   (a/chan)
-        out-chan (a/chan)]
-    (a/go (a/>! a-chan a)
-          (a/>! b-chan b)
-          (a/>! c-chan c)
-          (a/>! d-chan d)
-          (a/>! e-chan e)
-          (a/>! a-chan 0))
-    (a/go (intcode/compute
-           {:prog input :in-chan a-chan :out-chan b-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan b-chan :out-chan c-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan c-chan :out-chan d-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan d-chan :out-chan e-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan e-chan :out-chan out-chan :pointer 0}))
-    (->> (repeatedly #(a/<!! out-chan))
+(defn system-1 [input phases]
+  (let [[a b c d e :as channels] (repeatedly #(a/chan))
+        out                      (a/chan)]
+    (a/go
+      (dorun (map (fn [channel phase] (a/>!! channel phase)) channels phases))
+      (a/>!! a 0))
+    (dorun
+     (map (fn [in-chan out-chan]
+            (a/go (intcode/compute
+                   {:prog input :in-chan in-chan :out-chan out-chan :pointer 0})))
+          [a b c d e]
+          [b c d e out]))
+    (->> (repeatedly #(a/<!! out))
          (take-while identity)
          last)))
 
@@ -47,35 +36,23 @@
          (sort >)
          first)))
 
-(defn system-2 [input [a b c d e]]
-  (let [a-chan     (a/chan)
-        b-chan     (a/chan)
-        c-chan     (a/chan)
-        d-chan     (a/chan)
-        e-chan     (a/chan)
-        log-chan   (a/chan)
-        out-chan   (a/chan)
-        multi-chan (a/mult a-chan)]
-    (a/tap multi-chan log-chan)
-    (a/tap multi-chan out-chan)
+(defn system-2 [input phases]
+  (let [[a b c d e :as channels] (repeatedly #(a/chan))
+        log                      (a/chan)
+        out                      (a/chan)
+        multi-chan               (a/mult a)]
+    (a/tap multi-chan log)
+    (a/tap multi-chan out)
     (a/go
-      (a/>! a-chan a)
-      (a/>! b-chan b)
-      (a/>! c-chan c)
-      (a/>! d-chan d)
-      (a/>! e-chan e)
-      (a/>! a-chan 0))
-    (a/go (intcode/compute
-           {:prog input :in-chan out-chan :out-chan b-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan b-chan :out-chan c-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan c-chan :out-chan d-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan d-chan :out-chan e-chan :pointer 0}))
-    (a/go (intcode/compute
-           {:prog input :in-chan e-chan :out-chan a-chan :pointer 0}))
-    (->> (repeatedly #(a/<!! log-chan))
+      (dorun (map (fn [channel phase] (a/>!! channel phase)) channels phases))
+      (a/>!! a 0))
+    (dorun
+     (map (fn [in-chan out-chan]
+            (a/go (intcode/compute
+                   {:prog input :in-chan in-chan :out-chan out-chan :pointer 0})))
+          [out b c d e]
+          [b   c d e a]))
+    (->> (repeatedly #(a/<!! log))
          (take-while identity)
          last)))
 
