@@ -15,6 +15,10 @@
     (* (layer-freq-least-zeros 1)
        (layer-freq-least-zeros 2))))
 
+(defn render [image-data]
+  (->> (map (fn [line] (map #(if (= % 0) " " 8) line)) image-data)
+       (map #(apply str %))))
+
 (defn solve-1 []
   (->> input
        format-input
@@ -24,4 +28,5 @@
   (->> input
        format-input
        (apply map (fn [& args] (some #{1 0} args)))
-       (partition 25)))
+       (partition 25)
+       render))
