@@ -22,7 +22,9 @@
     (dorun
      (map (fn [in-chan out-chan]
             (a/go (intcode/compute
-                   {:prog input :in-chan in-chan :out-chan out-chan :pointer 0})))
+                   {:prog input :in-f #(a/<!! in-chan) :out-f #(a/>!! out-chan %) :pointer 0})
+                  (a/close! in-chan)
+                  (a/close! out-chan)))
           [a b c d e]
           [b c d e out]))
     (->> (repeatedly #(a/<!! out))
@@ -49,7 +51,9 @@
     (dorun
      (map (fn [in-chan out-chan]
             (a/go (intcode/compute
-                   {:prog input :in-chan in-chan :out-chan out-chan :pointer 0})))
+                   {:prog input :in-f #(a/<!! in-chan) :out-f #(a/>!! out-chan %) :pointer 0})
+                  (a/close! in-chan)
+                  (a/close! out-chan)))
           [out b c d e]
           [b   c d e a]))
     (->> (repeatedly #(a/<!! log))
